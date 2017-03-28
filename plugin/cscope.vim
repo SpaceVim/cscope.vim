@@ -7,7 +7,7 @@
 "=============================================================================
 
 if !exists('g:cscope_silent')
-  let g:cscope_silent = 0
+  let g:cscope_silent = 1
 endif
 
 if !exists('g:cscope_auto_update')
