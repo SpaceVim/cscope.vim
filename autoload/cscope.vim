@@ -1,6 +1,6 @@
 ""
 " @section Introduction, intro
-" @stylized cscope
+" @stylized vim-cscope
 " @library
 " @order intro key-mappings dicts functions exceptions layers api faq
 " Cscove(new name for this plugin, since cscope.vim is used too widely.) is a

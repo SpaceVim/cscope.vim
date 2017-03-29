@@ -1,15 +1,15 @@
-*cscope.txt*	A smart cscope helper for vim
-Brook Hong                                                   *cscope* *cscope*
+*vim-cscope.txt*	A smart cscope helper for vim
+Brook Hong                                           *vim-cscope* *vim-cscope*
 
 ==============================================================================
-CONTENTS                                                     *cscope-contents*
-  1. Introduction...............................................|cscope-intro|
-  2. KEY MAPPINGS........................................|cscope-key-mappings|
-  3. Functions..............................................|cscope-functions|
-  4. FAQ..........................................................|cscope-faq|
+CONTENTS                                                 *vim-cscope-contents*
+  1. Introduction...........................................|vim-cscope-intro|
+  2. KEY MAPPINGS....................................|vim-cscope-key-mappings|
+  3. Functions..........................................|vim-cscope-functions|
+  4. FAQ......................................................|vim-cscope-faq|
 
 ==============================================================================
-INTRODUCTION                                                    *cscope-intro*
+INTRODUCTION                                                *vim-cscope-intro*
 
 Cscove(new name for this plugin, since cscope.vim is used too widely.) is a
 smart cscope helper for vim.
@@ -35,7 +35,7 @@ Cscove frees you from creating/connecting/updating cscope database, let you
 focus on code browsing.
 
 ==============================================================================
-KEY MAPPINGS                                             *cscope-key-mappings*
+KEY MAPPINGS                                         *vim-cscope-key-mappings*
 
 The default key mappings has been removed from the plugin itself, since users
 may prefer different choices.
@@ -69,7 +69,7 @@ Some optional key mappings to search directly.
 <
 
 ==============================================================================
-FUNCTIONS                                                   *cscope-functions*
+FUNCTIONS                                               *vim-cscope-functions*
 
 cscope#find({querytype}, {pattern})                            *cscope#find()*
   search your {pattern} with {querytype} in the database suitable for current
@@ -86,7 +86,7 @@ cscope#toggleLocationList()                      *cscope#toggleLocationList()*
   toggle the location list for found results.
 
 ==============================================================================
-FAQ                                                               *cscope-faq*
+FAQ                                                           *vim-cscope-faq*
 
 This is a section of all the faq about this plugin.
 
