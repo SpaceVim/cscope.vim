@@ -1,5 +1,5 @@
 *vim-cscope.txt*	A smart cscope helper for vim
-Brook Hong                                           *vim-cscope* *vim-cscope*
+Brook Hong                                                        *vim-cscope*
 
 ==============================================================================
 CONTENTS                                                 *vim-cscope-contents*
