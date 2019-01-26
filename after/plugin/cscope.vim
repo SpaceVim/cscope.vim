@@ -6,14 +6,13 @@
 " License: GPLv3
 "=============================================================================
 
-if !empty(g:cscope_preload_path)
-  call cscope#_preloadDB()
+if exists('g:cscope_preload_path')
+  call cscope#preloadDB()
 endif
 
 if g:cscope_auto_update == 1
-  au BufWritePost * call cscope#_onChange()
+  au BufWritePost * call cscope#onChange()
 endif
 
 
-call cscope#_loadIndex()
-
+call cscope#loadIndex()
