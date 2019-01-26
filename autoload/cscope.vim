@@ -31,11 +31,30 @@ set cpo&vim
 " Cscove frees you from creating/connecting/updating cscope database, let you
 " focus on code browsing.
 
+" where to store cscope file?
+
+let s:cscope_vim_dir = substitute($HOME,'\\','/','g')."/.cscope.vim"
+let s:index_file = s:cscope_vim_dir.'/index'
+
+
 ""
 " search your {pattern} with {querytype} in the database suitable for current
 " file.
 function! cscope#find(querytype, pattern) abort
   
+endfunction
+
+function! cscope#_onChange()
+  if expand('%:t') =~? g:cscope_interested_files
+    let m_dir = <SID>GetBestPath(expand('%:p:h'))
+    if m_dir != ""
+      let s:dbs[m_dir]['dirty'] = 1
+      call <SID>FlushIndex()
+      call <SID>CheckNewFile(m_dir, expand('%:p'))
+      redraw
+      call <SID>echo('Your cscope db will be updated automatically, you can turn off this message by setting g:cscope_silent 1.')
+    endif
+  endif
 endfunction
 
 ""

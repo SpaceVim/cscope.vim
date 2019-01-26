@@ -359,6 +359,7 @@ endfunction
 function! CscopeUpdateDB()
   call <SID>updateDBs(keys(s:dbs))
 endfunction
+
 if exists('g:cscope_preload_path')
   call <SID>preloadDB()
 endif
