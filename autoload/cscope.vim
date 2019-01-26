@@ -65,7 +65,7 @@ function! cscope#find(action, word)
   if len(dirtyDirs) > 0
     call s:updateDBs(dirtyDirs)
   endif
-  let dbl = s:AutoloadDB(expand('%:p:h'))
+  let dbl = s:AutoloadDB(s:FILE.unify_path(getcwd()))
   if dbl == 0
     try
       exe ':lcs f '.a:action.' '.a:word
