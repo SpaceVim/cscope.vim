@@ -5,8 +5,9 @@ Shidong Wang                                                      *cscope.vim*
 CONTENTS                                                 *cscope.vim-contents*
   1. Introduction...........................................|cscope.vim-intro|
   2. Configuration.........................................|cscope.vim-config|
-  3. KEY MAPPINGS....................................|cscope.vim-key-mappings|
-  4. FAQ......................................................|cscope.vim-faq|
+  3. Commands............................................|cscope.vim-commands|
+  4. KEY MAPPINGS....................................|cscope.vim-key-mappings|
+  5. FAQ......................................................|cscope.vim-faq|
 
 ==============================================================================
 INTRODUCTION                                                *cscope.vim-intro*
@@ -38,6 +39,15 @@ CONFIGURATION                                              *cscope.vim-config*
 
                                                              *g:cscope_silent*
 Silent or not when run cscope command. by default it is 1.
+
+==============================================================================
+COMMANDS                                                 *cscope.vim-commands*
+
+:CscopeClear                                                    *:CscopeClear*
+  Clear cscope databases.
+
+:CscopeList                                                      *:CscopeList*
+  List all the cscope databases.
 
 ==============================================================================
 KEY MAPPINGS                                         *cscope.vim-key-mappings*

@@ -33,13 +33,37 @@ set cpo&vim
 
 let s:cscope_vim_dir = substitute($HOME,'\\','/','g')."/.cscope.vim"
 let s:index_file = s:cscope_vim_dir.'/index'
+let s:dbs = {}
+
+let s:FILE = SpaceVim#api#import('file')
 
 
 ""
-" search your {pattern} with {querytype} in the database suitable for current
+" search your {word} with {action} in the database suitable for current
 " file.
-function! cscope#find(querytype, pattern) abort
-  
+function! cscope#find(action, word)
+  let dirtyDirs = []
+  for d in keys(s:dbs)
+    if s:dbs[d]['dirty'] == 1
+      call add(dirtyDirs, d)
+    endif
+  endfor
+  if len(dirtyDirs) > 0
+    call <SID>updateDBs(dirtyDirs)
+  endif
+  let dbl = <SID>AutoloadDB(expand('%:p:h'))
+  if dbl == 0
+    try
+      exe ':lcs f '.a:action.' '.a:word
+      if g:cscope_open_location == 1
+        lw
+      endif
+    catch
+      echohl WarningMsg | echo 'Can not find '.a:word.' with querytype as '.a:action.'.' | echohl None
+    endtry
+  endif
+endfunction
+
 endfunction
 
 function! cscope#_onChange()
@@ -163,7 +187,7 @@ endfunction
 
 function! cscope#_updateDBs(dirs)
   for d in a:dirs
-    call <SID>_CreateDB(d, 0)
+    call s:CreateDB(d, 0)
   endfor
   call <SID>FlushIndex()
 endfunction
@@ -226,7 +250,7 @@ endif
 let s:cscope_vim_dir = substitute($HOME,'\\','/','g')."/.cscope.vim"
 let s:index_file = s:cscope_vim_dir.'/index'
 
-function! s:GetBestPath(dir)
+function! cscope#_GetBestPath(dir)
   let f = substitute(a:dir,'\\','/','g')
   let bestDir = ""
   for d in keys(s:dbs)
@@ -235,14 +259,6 @@ function! s:GetBestPath(dir)
     endif
   endfor
   return bestDir
-endfunction
-
-
-function! s:RmDBfiles()
-  let odbs = split(globpath(s:cscope_vim_dir, "*"), "\n")
-  for f in odbs
-    call delete(f)
-  endfor
 endfunction
 
 
@@ -259,8 +275,7 @@ function! s:CheckAbsolutePath(dir, defaultPath)
       break
     endif
   endwhile
-  let d = substitute(d,'\\','/','g')
-  let d = substitute(d,'/\+$','','')
+  let d = s:FILE.unify_path(d)
   return d
 endfunction
 
@@ -270,8 +285,8 @@ function! s:InitDB(dir)
   let s:dbs[a:dir]['id'] = id
   let s:dbs[a:dir]['loadtimes'] = 0
   let s:dbs[a:dir]['dirty'] = 0
-  call <SID>_CreateDB(a:dir, 1)
-  call <SID>FlushIndex()
+  call s:CreateDB(a:dir, 1)
+  call s:FlushIndex()
 endfunction
 
 function! s:LoadDB(dir)
@@ -333,38 +348,15 @@ function! s:loadIndex()
   endif
 endfunction
 
-function! s:preloadDB()
-  let dirs = split(g:cscope_preload_path, ';')
+function! cscope#_preloadDB()
+  let dirs = split(g:cscope_preload_path, s:FILE.pathSeparator)
   for m_dir in dirs
-    let m_dir = <SID>CheckAbsolutePath(m_dir, m_dir)
-    if ! has_key(s:dbs, m_dir)
-      call <SID>InitDB(m_dir)
+    let m_dir = s:CheckAbsolutePath(m_dir, m_dir)
+    if !has_key(s:dbs, m_dir)
+      call s:InitDB(m_dir)
     endif
-    call <SID>LoadDB(m_dir)
+    call s:LoadDB(m_dir)
   endfor
-endfunction
-
-function! CscopeFind(action, word)
-  let dirtyDirs = []
-  for d in keys(s:dbs)
-    if s:dbs[d]['dirty'] == 1
-      call add(dirtyDirs, d)
-    endif
-  endfor
-  if len(dirtyDirs) > 0
-    call <SID>updateDBs(dirtyDirs)
-  endif
-  let dbl = <SID>AutoloadDB(expand('%:p:h'))
-  if dbl == 0
-    try
-      exe ':lcs f '.a:action.' '.a:word
-      if g:cscope_open_location == 1
-        lw
-      endif
-    catch
-      echohl WarningMsg | echo 'Can not find '.a:word.' with querytype as '.a:action.'.' | echohl None
-    endtry
-  endif
 endfunction
 
 function! CscopeFindInteractive(pat)
@@ -379,9 +371,9 @@ function! CscopeFindInteractive(pat)
     call feedkeys("\<CR>")
 endfunction
 
-function! s:onChange()
+function! cscope#_onChange()
   if expand('%:t') =~? g:cscope_interested_files
-    let m_dir = <SID>GetBestPath(expand('%:p:h'))
+    let m_dir = cscope#_GetBestPath(expand('%:p:h'))
     if m_dir != ""
       let s:dbs[m_dir]['dirty'] = 1
       call <SID>FlushIndex()
@@ -395,7 +387,7 @@ endfunction
 function! CscopeUpdateDB()
   call <SID>updateDBs(keys(s:dbs))
 endfunction
-function! cscope#_CreateDB(dir, init)
+function! s:CreateDB(dir, init)
   let id = s:dbs[a:dir]['id']
   let cscope_files = s:cscope_vim_dir."/".id."_inc.files"
   let cscope_db = s:cscope_vim_dir.'/'.id.'_inc.db'

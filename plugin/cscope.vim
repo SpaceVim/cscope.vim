@@ -20,10 +20,18 @@ if !exists('g:cscope_open_location')
     let g:cscope_open_location = 1
 endif
 
+if exists('g:cscope_preload_path')
+    let g:cscope_preload_path = ''
+endif
+
 if !exists('g:cscope_split_threshold')
     let g:cscope_split_threshold = 10000
 endif
 
 set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
+""
+" Clear cscope databases.
 com! -nargs=? -complete=customlist,cscope#_listDirs CscopeClear call cscope#clearDBs("<args>")
+""
+" List all the cscope databases.
 com! -nargs=0 CscopeList call cscope#listDBs()
