@@ -1,5 +1,5 @@
 {
-  "name": "vim-cscope",
+  "name": "cscope.vim",
   "description": "A smart cscope helper for vim",
-  "author": "Brook Hong"
+  "author": "Shidong Wang"
 }
