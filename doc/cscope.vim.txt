@@ -1,18 +1,17 @@
-*vim-cscope.txt*	A smart cscope helper for vim
-Brook Hong                                                        *vim-cscope*
+*cscope.vim.txt*	A smart cscope helper for vim
+Shidong Wang                                                      *cscope.vim*
 
 ==============================================================================
-CONTENTS                                                 *vim-cscope-contents*
-  1. Introduction...........................................|vim-cscope-intro|
-  2. KEY MAPPINGS....................................|vim-cscope-key-mappings|
-  3. Functions..........................................|vim-cscope-functions|
-  4. FAQ......................................................|vim-cscope-faq|
+CONTENTS                                                 *cscope.vim-contents*
+  1. Introduction...........................................|cscope.vim-intro|
+  2. Configuration.........................................|cscope.vim-config|
+  3. KEY MAPPINGS....................................|cscope.vim-key-mappings|
+  4. FAQ......................................................|cscope.vim-faq|
 
 ==============================================================================
-INTRODUCTION                                                *vim-cscope-intro*
+INTRODUCTION                                                *cscope.vim-intro*
 
-Cscove(new name for this plugin, since cscope.vim is used too widely.) is a
-smart cscope helper for vim.
+cscope.vim is a smart cscope plugin for SpaceVim.
 
 It will try to find a proper cscope database for current file, then connect to
 it. If there is no proper cscope database for current file, you are prompted
@@ -35,7 +34,13 @@ Cscove frees you from creating/connecting/updating cscope database, let you
 focus on code browsing.
 
 ==============================================================================
-KEY MAPPINGS                                         *vim-cscope-key-mappings*
+CONFIGURATION                                              *cscope.vim-config*
+
+                                                             *g:cscope_silent*
+Silent or not when run cscope command. by default it is 1.
+
+==============================================================================
+KEY MAPPINGS                                         *cscope.vim-key-mappings*
 
 The default key mappings has been removed from the plugin itself, since users
 may prefer different choices.
@@ -69,24 +74,7 @@ Some optional key mappings to search directly.
 <
 
 ==============================================================================
-FUNCTIONS                                               *vim-cscope-functions*
-
-cscope#find({querytype}, {pattern})                            *cscope#find()*
-  search your {pattern} with {querytype} in the database suitable for current
-  file.
-
-cscope#findInteractive({pattern})                   *cscope#findInteractive()*
-  provide an interactive interface for finding what you want.
-
-cscope#updateDB()                                          *cscope#updateDB()*
-  update all existing cscope databases in case that you disable cscope
-  database auto update.
-
-cscope#toggleLocationList()                      *cscope#toggleLocationList()*
-  toggle the location list for found results.
-
-==============================================================================
-FAQ                                                           *vim-cscope-faq*
+FAQ                                                           *cscope.vim-faq*
 
 This is a section of all the faq about this plugin.
 
