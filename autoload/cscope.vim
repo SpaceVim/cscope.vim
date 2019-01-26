@@ -175,7 +175,7 @@ function! s:AutoloadDB(dir)
     endif
   else
     let id = s:dbs[m_dir]['id']
-    if cscope_connection(2, s:cscope_vim_dir.'/'.id.'.db') == 0
+    if cscope_connection(2, s:cscope_vim_dir.id.'.db') == 0
       call s:LoadDB(m_dir)
     endif
   endif
