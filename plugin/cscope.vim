@@ -35,3 +35,14 @@ com! -nargs=? -complete=customlist,cscope#listDirs CscopeClear call cscope#clear
 ""
 " List all the cscope databases.
 com! -nargs=0 CscopeList call cscope#listDBs()
+
+if exists('g:cscope_preload_path')
+  call cscope#preloadDB()
+endif
+
+if g:cscope_auto_update == 1
+  au BufWritePost * call cscope#onChange()
+endif
+
+
+call cscope#loadIndex()
