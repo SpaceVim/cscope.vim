@@ -44,11 +44,12 @@ if !exists('g:cscope_cmd')
   endif
 endif
 
-let s:cscope_vim_dir = substitute($HOME,'\\','/','g')."/.cscope.vim"
-let s:index_file = s:cscope_vim_dir.'/index'
+let s:FILE = SpaceVim#api#import('file')
+let s:cscope_vim_dir = s:FILE.unify_path('~/.cache/SpaceVim/cscope/')
+let s:index_file = s:cscope_vim_dir.'index'
 let s:dbs = {}
 
-let s:FILE = SpaceVim#api#import('file')
+
 
 
 ""
@@ -188,7 +189,7 @@ function! s:updateDBs(dirs)
   call s:FlushIndex()
 endfunction
 
-function! s:clearDBs(dir)
+function! cscope#clearDBs(dir)
   cs kill -1
   if a:dir == ""
     let s:dbs = {}
@@ -223,9 +224,6 @@ function! ToggleLocationList()
     endif
   endif
 endfunction
-
-let s:cscope_vim_dir = s:FILE.unify_path('~/.cache/SpaceVim/tags/')
-let s:index_file = s:cscope_vim_dir.'index'
 
 function! s:GetBestPath(dir)
   let f = substitute(a:dir,'\\','/','g')

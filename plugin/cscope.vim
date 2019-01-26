@@ -31,7 +31,7 @@ endif
 set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
 ""
 " Clear cscope databases.
-com! -nargs=? -complete=customlist,cscope#listDirs CscopeClear call cscope#clearDBs("<args>")
+com! -nargs=? -complete=customlist,cscope#listDirs CscopeClear call cscope#clearDBs(<f-args>)
 ""
 " List all the cscope databases.
 com! -nargs=0 CscopeList call cscope#listDBs()
