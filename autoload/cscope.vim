@@ -65,7 +65,7 @@ function! cscope#find(action, word)
   if len(dirtyDirs) > 0
     call s:updateDBs(dirtyDirs)
   endif
-  let dbl = s:AutoloadDB(s:FILE.unify_path(getcwd()))
+  let dbl = s:AutoloadDB(s:FILE.unify_path(SpaceVim#plugins#projectmanager#current_root()))
   if dbl == 0
     try
       exe ':lcs f '.a:action.' '.a:word
