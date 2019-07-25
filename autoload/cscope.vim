@@ -79,7 +79,7 @@ function! cscope#find(action, word)
 endfunction
 
 function! s:RmDBfiles()
-  let odbs = split(globpath(s:cscope_vim_dir, "*"), "\n")
+  let odbs = SpaceVim#util#globpath(s:cscope_vim_dir, "*")
   for f in odbs
     call delete(f)
   endfor
@@ -119,7 +119,7 @@ function! s:ListFiles(dir)
   let sl = &l:stl
   try
     while cwd != ''
-      let a = split(globpath(cwd, "*"), "\n")
+      let a = SpaceVim#util#globpath(cwd, "*")
       for fn in a
         if getftype(fn) == 'dir'
           if !exists('g:cscope_ignored_dir') || fn !~? g:cscope_ignored_dir
