@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.gather_candidates(args, context) "{{{
   call unite#print_message('[cscope/egrep_pattern] ')
   if len(a:args) == 0
-    let a:context.input = input('Find this egrep pattern: ')
+    let a:context.input = input('Find this egrep pattern: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

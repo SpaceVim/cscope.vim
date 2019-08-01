@@ -11,9 +11,10 @@ let s:source = {
 \}
 
 function! s:source.gather_candidates(args, context) "{{{
+  echo a:args, a:context
   call unite#print_message('[cscope/assignments_to_symbol] ')
   if len(a:args) == 0
-    let a:context.input = input('Find assignments to this symbol: ')
+    let a:context.input = input('Find assignments to this symbol: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.gather_candidates(args, context) "{{{
   call unite#print_message('[cscope/text_string] ')
   if len(a:args) == 0
-    let a:context.input = input('Find this text string: ')
+    let a:context.input = input('Find this text string: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

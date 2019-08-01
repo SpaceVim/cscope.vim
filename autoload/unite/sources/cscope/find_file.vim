@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.gather_candidates(args, context) "{{{
   call unite#print_message('[cscope/find_file] ')
   if len(a:args) == 0
-    let a:context.input = input('Find this file: ')
+    let a:context.input = input('Find this file: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

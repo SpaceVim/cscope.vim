@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.change_candidates(args, context) "{{{
   call unite#print_message('[cscope/including_this_file] ')
   if len(a:args) == 0
-    let a:context.input = input('Find files including this file: ')
+    let a:context.input = input('Find files including this file: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

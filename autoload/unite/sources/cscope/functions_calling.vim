@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.gather_candidates(args, context) "{{{
   call unite#print_message('[cscope/functions_calling] ')
   if len(a:args) == 0
-    let a:context.input = input('Find functions calling: ')
+    let a:context.input = input('Find functions calling: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif

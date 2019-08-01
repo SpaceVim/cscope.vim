@@ -13,7 +13,7 @@ let s:source = {
 function! s:source.gather_candidates(args, context) "{{{
   call unite#print_message('[cscope/global_definition] ')
   if len(a:args) == 0
-    let a:context.input = input('Find this global definition: ')
+    let a:context.input = input('Find this global definition: ', expand("<cword>"))
   else
     let a:context.input = a:args[0]
   endif
