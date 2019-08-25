@@ -45,8 +45,9 @@ if !exists('g:cscope_cmd')
 endif
 
 let s:FILE = SpaceVim#api#import('file')
-let s:cscope_vim_dir = s:FILE.unify_path('~/.cache/SpaceVim/cscope/')
-let s:index_file = s:cscope_vim_dir.'index'
+let s:JSON = SpaceVim#api#import('data#json')
+let s:cscope_cache_dir = s:FILE.unify_path('~/.cache/SpaceVim/cscope/')
+let s:cscope_db_index = s:cscope_cache_dir.'index'
 let s:dbs = {}
 
 
@@ -79,7 +80,7 @@ function! cscope#find(action, word)
 endfunction
 
 function! s:RmDBfiles()
-  let odbs = split(globpath(s:cscope_vim_dir, "*"), "\n")
+  let odbs = split(globpath(s:cscope_cache_dir, "*"), "\n")
   for f in odbs
     call delete(f)
   endfor
@@ -87,10 +88,10 @@ endfunction
 
 function! s:CheckNewFile(dir, newfile)
   let id = s:dbs[a:dir]['id']
-  let cscope_files = s:cscope_vim_dir.id.".files"
+  let cscope_files = s:cscope_cache_dir.id.".files"
   let files = readfile(cscope_files)
   if len(files) > g:cscope_split_threshold
-    let cscope_files = s:cscope_vim_dir.id."_inc.files"
+    let cscope_files = s:cscope_cache_dir.id."_inc.files"
     if filereadable(cscope_files)
       let files = readfile(cscope_files)
     else
@@ -104,11 +105,7 @@ function! s:CheckNewFile(dir, newfile)
 endfunction
 
 function! s:FlushIndex()
-  let lines = []
-  for d in keys(s:dbs)
-    call add(lines, d.'|'.s:dbs[d]['id'].'|'.s:dbs[d]['loadtimes'].'|'.s:dbs[d]['dirty'])
-  endfor
-  call writefile(lines, s:index_file)
+  call writefile(s:JSON.json_encode(s:dbs), s:cscope_db_index)
 endfunction
 
 
@@ -175,7 +172,7 @@ function! s:AutoloadDB(dir)
     endif
   else
     let id = s:dbs[m_dir]['id']
-    if cscope_connection(2, s:cscope_vim_dir.id.'.db') == 0
+    if cscope_connection(2, s:cscope_cache_dir.id.'.db') == 0
       call s:LoadDB(m_dir)
     endif
   endif
@@ -196,10 +193,10 @@ function! cscope#clearDBs(dir)
     call s:RmDBfiles()
   else
     let id = s:dbs[a:dir]['id']
-    call delete(s:cscope_vim_dir.id.".files")
-    call delete(s:cscope_vim_dir.id.'.db')
-    call delete(s:cscope_vim_dir.id."_inc.files")
-    call delete(s:cscope_vim_dir.id.'_inc.db')
+    call delete(s:cscope_cache_dir.id.".files")
+    call delete(s:cscope_cache_dir.id.'.db')
+    call delete(s:cscope_cache_dir.id."_inc.files")
+    call delete(s:cscope_cache_dir.id.'_inc.db')
     unlet s:dbs[a:dir]
   endif
   call s:FlushIndex()
@@ -256,21 +253,23 @@ endfunction
 
 function! s:InitDB(dir)
   let id = localtime()
-  let s:dbs[a:dir] = {}
-  let s:dbs[a:dir]['id'] = id
-  let s:dbs[a:dir]['loadtimes'] = 0
-  let s:dbs[a:dir]['dirty'] = 0
-  call s:CreateDB(a:dir, 1)
+  let dir = s:FILE.path_to_fname(a:dir)
+  let s:dbs[dir] = {}
+  let s:dbs[dir]['id'] = id
+  let s:dbs[dir]['loadtimes'] = 0
+  let s:dbs[dir]['dirty'] = 0
+  call s:CreateDB(s:cscope_cache_dir . dir, 1)
   call s:FlushIndex()
 endfunction
 
 function! s:LoadDB(dir)
+  let dir = s:FILE.path_to_fname(a:dir)
   cs kill -1
-  exe 'cs add '.s:cscope_vim_dir.s:dbs[a:dir]['id'].'.db'
-  if filereadable(s:cscope_vim_dir.s:dbs[a:dir]['id'].'_inc.db')
-    exe 'cs add '.s:cscope_vim_dir.s:dbs[a:dir]['id'].'_inc.db'
+  exe 'cs add '.s:cscope_cache_dir . dir .'.db'
+  if filereadable(s:cscope_cache_dir . dir .'_inc.db')
+    exe 'cs add '.s:cscope_cache_dir . dir .'_inc.db'
   endif
-  let s:dbs[a:dir]['loadtimes'] = s:dbs[a:dir]['loadtimes']+1
+  let s:dbs[dir]['loadtimes'] = s:dbs[dir]['loadtimes'] + 1
   call s:FlushIndex()
 endfunction
 
@@ -282,7 +281,7 @@ function! cscope#listDBs()
     let s = [' ID                   LOADTIMES    PATH']
     for d in dirs
       let id = s:dbs[d]['id']
-      if cscope_connection(2, s:cscope_vim_dir.id.'.db') == 1
+      if cscope_connection(2, s:cscope_cache_dir.id.'.db') == 1
         let l = printf("*%d  %10d            %s", id, s:dbs[d]['loadtimes'], d)
       else
         let l = printf(" %d  %10d            %s", id, s:dbs[d]['loadtimes'], d)
@@ -295,17 +294,17 @@ endfunction
 
 function! cscope#loadIndex()
   let s:dbs = {}
-  if ! isdirectory(s:cscope_vim_dir)
-    call mkdir(s:cscope_vim_dir)
-  elseif filereadable(s:index_file)
-    let idx = readfile(s:index_file)
+  if ! isdirectory(s:cscope_cache_dir)
+    call mkdir(s:cscope_cache_dir)
+  elseif filereadable(s:cscope_db_index)
+    let idx = readfile(s:cscope_db_index)
     for i in idx
       let e = split(i, '|')
       if len(e) == 0
-        call delete(s:index_file)
+        call delete(s:cscope_db_index)
         call s:RmDBfiles()
       else
-        let db_file = s:cscope_vim_dir.e[1].'.db'
+        let db_file = s:cscope_cache_dir.e[1].'.db'
         if filereadable(db_file)
           if isdirectory(e[0])
             let s:dbs[e[0]] = {}
@@ -359,11 +358,11 @@ endfunction
 
 function! s:CreateDB(dir, init)
   let id = s:dbs[a:dir]['id']
-  let cscope_files = s:cscope_vim_dir.id."_inc.files"
-  let cscope_db = s:cscope_vim_dir.id.'_inc.db'
+  let cscope_files = s:cscope_cache_dir.id."_inc.files"
+  let cscope_db = s:cscope_cache_dir.id.'_inc.db'
   if ! filereadable(cscope_files) || a:init
-    let cscope_files = s:cscope_vim_dir.id.".files"
-    let cscope_db = s:cscope_vim_dir.id.'.db'
+    let cscope_files = s:cscope_cache_dir.id.".files"
+    let cscope_db = s:cscope_cache_dir.id.'.db'
     if ! filereadable(cscope_files)
       let files = s:ListFiles(a:dir)
       call writefile(files, cscope_files)
