@@ -32,7 +32,7 @@ set cpo&vim
 " where to store cscope file?
 
 function! s:echo(msg)
-    echo a:msg
+  echo a:msg
 endfunction
 
 if !exists('g:cscope_cmd')
@@ -105,7 +105,7 @@ function! s:CheckNewFile(dir, newfile)
 endfunction
 
 function! s:FlushIndex()
-  call writefile(s:JSON.json_encode(s:dbs), s:cscope_db_index)
+  call writefile([s:JSON.json_encode(s:dbs)], s:cscope_db_index)
 endfunction
 
 
@@ -113,7 +113,6 @@ function! s:ListFiles(dir)
   let d = []
   let f = []
   let cwd = a:dir
-  let sl = &l:stl
   try
     while cwd != ''
       let a = split(globpath(cwd, "*"), "\n")
@@ -132,20 +131,18 @@ function! s:ListFiles(dir)
         endif
       endfor
       let cwd = len(d) ? remove(d, 0) : ''
-      sleep 1m | let &l:stl = 'Found '.len(f).' files, finding in '.cwd | redrawstatus
     endwhile
   catch /^Vim:Interrupt$/
   catch
     echo "caught" v:exception
   endtry
-  sleep 1m | let &l:stl = sl | redrawstatus
   return f
 endfunction
 
 ""
 " provide an interactive interface for finding what you want.
 function! cscope#findInteractive(pattern) abort
-  
+
 endfunction
 
 ""
@@ -258,7 +255,7 @@ function! s:InitDB(dir)
   let s:dbs[dir]['id'] = id
   let s:dbs[dir]['loadtimes'] = 0
   let s:dbs[dir]['dirty'] = 0
-  call s:CreateDB(s:cscope_cache_dir . dir, 1)
+  call s:CreateDB(a:dir, 1)
   call s:FlushIndex()
 endfunction
 
@@ -297,26 +294,7 @@ function! cscope#loadIndex()
   if ! isdirectory(s:cscope_cache_dir)
     call mkdir(s:cscope_cache_dir)
   elseif filereadable(s:cscope_db_index)
-    let idx = readfile(s:cscope_db_index)
-    for i in idx
-      let e = split(i, '|')
-      if len(e) == 0
-        call delete(s:cscope_db_index)
-        call s:RmDBfiles()
-      else
-        let db_file = s:cscope_cache_dir.e[1].'.db'
-        if filereadable(db_file)
-          if isdirectory(e[0])
-            let s:dbs[e[0]] = {}
-            let s:dbs[e[0]]['id'] = e[1]
-            let s:dbs[e[0]]['loadtimes'] = e[2]
-            let s:dbs[e[0]]['dirty'] = (len(e) > 3) ? e[3] :0
-          else
-            call delete(db_file)
-          endif
-        endif
-      endif
-    endfor
+    let s:dbs = s:JSON.json_decode(join(readfile(s:cscope_db_index, ''), ''))
   else
     call s:RmDBfiles()
   endif
@@ -334,56 +312,65 @@ function! cscope#preloadDB()
 endfunction
 
 function! CscopeFindInteractive(pat)
-    call inputsave()
-    let qt = input("\nChoose a querytype for '".a:pat."'(:help cscope-find)\n  c: functions calling this function\n  d: functions called by this function\n  e: this egrep pattern\n  f: this file\n  g: this definition\n  i: files #including this file\n  s: this C symbol\n  t: this text string\n\n  or\n  <querytype><pattern> to query `pattern` instead of '".a:pat."' as `querytype`, Ex. `smain` to query a C symbol named 'main'.\n> ")
-    call inputrestore()
-    if len(qt) > 1
-        call CscopeFind(qt[0], qt[1:])
-    elseif len(qt) > 0
-        call CscopeFind(qt, a:pat)
-    endif
-    call feedkeys("\<CR>")
+  call inputsave()
+  let qt = input("\nChoose a querytype for '".a:pat."'(:help cscope-find)\n  c: functions calling this function\n  d: functions called by this function\n  e: this egrep pattern\n  f: this file\n  g: this definition\n  i: files #including this file\n  s: this C symbol\n  t: this text string\n\n  or\n  <querytype><pattern> to query `pattern` instead of '".a:pat."' as `querytype`, Ex. `smain` to query a C symbol named 'main'.\n> ")
+  call inputrestore()
+  if len(qt) > 1
+    call CscopeFind(qt[0], qt[1:])
+  elseif len(qt) > 0
+    call CscopeFind(qt, a:pat)
+  endif
+  call feedkeys("\<CR>")
 endfunction
 
 function! cscope#onChange()
-    let m_dir = s:GetBestPath(expand('%:p:h'))
-    if m_dir != ""
-      let s:dbs[m_dir]['dirty'] = 1
-      call s:FlushIndex()
-      call s:CheckNewFile(m_dir, expand('%:p'))
-      redraw
-      call s:echo('Your cscope db will be updated automatically, you can turn off this message by setting g:cscope_silent 1.')
-    endif
+  let m_dir = s:GetBestPath(expand('%:p:h'))
+  if m_dir != ""
+    let s:dbs[m_dir]['dirty'] = 1
+    call s:FlushIndex()
+    call s:CheckNewFile(m_dir, expand('%:p'))
+    redraw
+    call s:echo('Your cscope db will be updated automatically, you can turn off this message by setting g:cscope_silent 1.')
+  endif
 endfunction
 
 function! s:CreateDB(dir, init)
-  let id = s:dbs[a:dir]['id']
-  let cscope_files = s:cscope_cache_dir.id."_inc.files"
-  let cscope_db = s:cscope_cache_dir.id.'_inc.db'
-  if ! filereadable(cscope_files) || a:init
-    let cscope_files = s:cscope_cache_dir.id.".files"
-    let cscope_db = s:cscope_cache_dir.id.'.db'
-    if ! filereadable(cscope_files)
-      let files = s:ListFiles(a:dir)
-      call writefile(files, cscope_files)
-    endif
+  let dir = s:FILE.path_to_fname(a:dir)
+  let id = s:dbs[dir]['id']
+  let cscope_files = s:cscope_cache_dir . dir . "/cscope.files"
+  let cscope_db = s:cscope_cache_dir . dir . '/cscope.db'
+  if ! isdirectory(s:cscope_cache_dir . dir)
+    call mkdir(s:cscope_cache_dir . dir)
   endif
-  exec 'cs kill '.cscope_db
+  if !filereadable(cscope_files)
+    let files = s:ListFiles(a:dir)
+    call writefile(files, cscope_files)
+  endif
+  try
+    exec 'cs kill '.cscope_db
+  catch
+  endtry
   redir @x
   exec 'silent !'.g:cscope_cmd.' -b -i '.cscope_files.' -f'.cscope_db
   redi END
   if @x =~ "\nCommand terminated\n"
     echohl WarningMsg | echo "Failed to create cscope database for ".a:dir.", please check if " | echohl None
   else
-    let s:dbs[a:dir]['dirty'] = 0
+    let s:dbs[dir]['dirty'] = 0
     exec 'cs add '.cscope_db
   endif
 endfunction
 
+function! cscope#create_databeses() abort
+  let dir = SpaceVim#plugins#projectmanager#current_root()
+  call s:InitDB(dir)
+endfunction
+
+
 ""
 " toggle the location list for found results.
 function! cscope#toggleLocationList() abort
-  
+
 endfunction
 
 function! cscope#process_data(query)
@@ -437,12 +424,12 @@ endfunction
 function! cscope#line_parse(line)
   let details = split(a:line)
   return {
-\    "line": a:line,
-\    "file_name": details[0],
-\    "function_name": details[1],
-\    "line_number": str2nr(details[2], 10),
-\    "code_line": join(details[3:])
-\  }
+        \    "line": a:line,
+        \    "file_name": details[0],
+        \    "function_name": details[1],
+        \    "line_number": str2nr(details[2], 10),
+        \    "code_line": join(details[3:])
+        \  }
 endfunction
 
 
