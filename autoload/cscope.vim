@@ -66,7 +66,7 @@ function! cscope#find(action, word)
   if len(dirtyDirs) > 0
     call s:updateDBs(dirtyDirs)
   endif
-  let dbl = s:AutoloadDB(s:FILE.unify_path(SpaceVim#plugins#projectmanager#current_root()))
+  let dbl = s:AutoloadDB(SpaceVim#plugins#projectmanager#current_root())
   if dbl == 0
     try
       exe ':lcs f '.a:action.' '.a:word
@@ -82,22 +82,24 @@ endfunction
 function! s:RmDBfiles()
   let odbs = split(globpath(s:cscope_cache_dir, "*"), "\n")
   for f in odbs
-    call delete(f)
+    call delete(f, 'rf')
   endfor
 endfunction
 
 function! s:CheckNewFile(dir, newfile)
-  let id = s:dbs[a:dir]['id']
-  let cscope_files = s:cscope_cache_dir.id.".files"
+  let dir = s:FILE.path_to_fname(a:dir)
+  let id = s:dbs[dir]['id']
+  let cscope_files = s:cscope_cache_dir. dir ."/cscope.files"
   let files = readfile(cscope_files)
-  if len(files) > g:cscope_split_threshold
-    let cscope_files = s:cscope_cache_dir.id."_inc.files"
-    if filereadable(cscope_files)
-      let files = readfile(cscope_files)
-    else
-      let files = []
-    endif
-  endif
+  " @todo support threshold
+  " if len(files) > g:cscope_split_threshold
+  "   let cscope_files = s:cscope_cache_dir.id."_inc.files"
+  "   if filereadable(cscope_files)
+  "     let files = readfile(cscope_files)
+  "   else
+  "     let files = []
+  "   endif
+  " endif
   if count(files, a:newfile) == 0
     call add(files, a:newfile)
     call writefile(files, cscope_files)
@@ -148,16 +150,25 @@ endfunction
 ""
 " update all existing cscope databases in case that you disable cscope database
 " auto update.
-function! cscope#updateDB() abort
+function! cscope#update_databeses() abort
   call s:updateDBs(keys(s:dbs))
 endfunction
+
+
+""
+" Create databases for current project
+function! cscope#create_databeses() abort
+  let dir = SpaceVim#plugins#projectmanager#current_root()
+  call s:InitDB(dir)
+endfunction
+
 
 " 0 -- loaded
 " 1 -- cancelled
 function! s:AutoloadDB(dir)
   let ret = 0
   let m_dir = s:GetBestPath(a:dir)
-  if m_dir == ""
+  if m_dir == ''
     echohl WarningMsg | echo "Can not find proper cscope db, please input a path to generate cscope db for." | echohl None
     let m_dir = input("", a:dir, 'dir')
     if m_dir != ''
@@ -169,8 +180,8 @@ function! s:AutoloadDB(dir)
     endif
   else
     let id = s:dbs[m_dir]['id']
-    if cscope_connection(2, s:cscope_cache_dir.id.'.db') == 0
-      call s:LoadDB(m_dir)
+    if cscope_connection(2, s:cscope_cache_dir. m_dir .'/cscope.db') == 0
+      call s:LoadDB(s:dbs[m_dir].root)
     endif
   endif
   return ret
@@ -220,14 +231,14 @@ function! ToggleLocationList()
 endfunction
 
 function! s:GetBestPath(dir)
-  let f = substitute(a:dir,'\\','/','g')
-  let bestDir = ""
+  let f = s:FILE.path_to_fname(a:dir)
+  let bestDir = ''
   for d in keys(s:dbs)
     if stridx(f, d) == 0 && len(d) > len(bestDir)
-      let bestDir = d
+      return d
     endif
   endfor
-  return bestDir
+  return ''
 endfunction
 
 
@@ -248,6 +259,13 @@ function! s:CheckAbsolutePath(dir, defaultPath)
   return d
 endfunction
 
+
+" init a database, a database should has following keys:
+" 1. id: this will be removed
+" 2. loadtimes:
+" 3. dirty:
+" 4. root: path of the project
+
 function! s:InitDB(dir)
   let id = localtime()
   let dir = s:FILE.path_to_fname(a:dir)
@@ -255,6 +273,7 @@ function! s:InitDB(dir)
   let s:dbs[dir]['id'] = id
   let s:dbs[dir]['loadtimes'] = 0
   let s:dbs[dir]['dirty'] = 0
+  let s:dbs[dir]['root'] = a:dir
   call s:CreateDB(a:dir, 1)
   call s:FlushIndex()
 endfunction
@@ -325,6 +344,7 @@ endfunction
 
 function! cscope#onChange()
   let m_dir = s:GetBestPath(expand('%:p:h'))
+  echom m_dir
   if m_dir != ""
     let s:dbs[m_dir]['dirty'] = 1
     call s:FlushIndex()
@@ -342,7 +362,7 @@ function! s:CreateDB(dir, init)
   if ! isdirectory(s:cscope_cache_dir . dir)
     call mkdir(s:cscope_cache_dir . dir)
   endif
-  if !filereadable(cscope_files)
+  if !filereadable(cscope_files) || a:init
     let files = s:ListFiles(a:dir)
     call writefile(files, cscope_files)
   endif
@@ -360,12 +380,6 @@ function! s:CreateDB(dir, init)
     exec 'cs add '.cscope_db
   endif
 endfunction
-
-function! cscope#create_databeses() abort
-  let dir = SpaceVim#plugins#projectmanager#current_root()
-  call s:InitDB(dir)
-endfunction
-
 
 ""
 " toggle the location list for found results.
