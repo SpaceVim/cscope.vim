@@ -281,10 +281,7 @@ endfunction
 function! s:LoadDB(dir)
   let dir = s:FILE.path_to_fname(a:dir)
   cs kill -1
-  exe 'cs add '.s:cscope_cache_dir . dir .'.db'
-  if filereadable(s:cscope_cache_dir . dir .'_inc.db')
-    exe 'cs add '.s:cscope_cache_dir . dir .'_inc.db'
-  endif
+  exe 'cs add '.s:cscope_cache_dir . dir .'/cscope.db'
   let s:dbs[dir]['loadtimes'] = s:dbs[dir]['loadtimes'] + 1
   call s:FlushIndex()
 endfunction
