@@ -283,7 +283,7 @@ function! s:LoadDB(dir)
   call s:FlushIndex()
 endfunction
 
-function! cscope#listDBs()
+function! cscope#list_databases()
   let dirs = keys(s:dbs)
   if len(dirs) == 0
     echo "You have no cscope dbs now."
