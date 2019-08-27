@@ -330,7 +330,8 @@ function! cscope#preloadDB()
   let dirs = split(g:cscope_preload_path, s:FILE.pathSeparator)
   for m_dir in dirs
     let m_dir = s:CheckAbsolutePath(m_dir, m_dir)
-    if !has_key(s:dbs, m_dir)
+    let m_key = s:FILE.path_to_fname(m_dir)
+    if !has_key(s:dbs, m_key)
       call s:InitDB(m_dir)
     endif
     call s:LoadDB(m_dir)
@@ -383,7 +384,7 @@ function! s:CreateDB(dir, init)
     echohl WarningMsg | echo 'Failed to create cscope database for ' . a:dir | echohl None
   else
     let s:dbs[dir]['dirty'] = 0
-    call s:add_databases(cscope_db)
+    call s:echo('database created: ' . cscope_db)
   endif
   let @x = save_x
 endfunction
