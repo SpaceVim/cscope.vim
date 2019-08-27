@@ -192,18 +192,17 @@ endfunction
 
 ""
 " clear databases
-function! cscope#clearDBs(dir)
+function! cscope#clear_databases(...)
   cs kill -1
-  if a:dir == ""
+  if a:0 == 0
     let s:dbs = {}
     call s:RmDBfiles()
   else
-    let id = s:dbs[a:dir]['id']
-    call delete(s:cscope_cache_dir.id.".files")
-    call delete(s:cscope_cache_dir.id.'.db')
-    call delete(s:cscope_cache_dir.id."_inc.files")
-    call delete(s:cscope_cache_dir.id.'_inc.db')
-    unlet s:dbs[a:dir]
+    let dir = s:FILE.path_to_fname(a:1)
+    let id = s:dbs[dir]['id']
+    call delete(s:cscope_cache_dir. dir ."/cscope.files")
+    call delete(s:cscope_cache_dir. dir .'/cscope.db')
+    unlet s:dbs[dir]
   endif
   call s:FlushIndex()
 endfunction
