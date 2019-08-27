@@ -146,7 +146,7 @@ endfunction
 " update all existing cscope databases in case that you disable cscope database
 " auto update.
 function! cscope#update_databeses() abort
-  call s:updateDBs(keys(s:dbs))
+  call s:updateDBs(map(keys(s:dbs), 's:dbs[v:val].root'))
 endfunction
 
 
