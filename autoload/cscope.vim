@@ -69,7 +69,7 @@ function! cscope#find(action, word)
   let dbl = s:AutoloadDB(SpaceVim#plugins#projectmanager#current_root())
   if dbl == 0
     try
-      exe ':lcs f '.a:action.' '.a:word
+      exe ':silent lcs f '.a:action.' '.a:word
       if g:cscope_open_location == 1
         lw
       endif
