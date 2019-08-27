@@ -288,13 +288,13 @@ function! cscope#listDBs()
   if len(dirs) == 0
     echo "You have no cscope dbs now."
   else
-    let s = [' ID                   LOADTIMES    PATH']
+    let s = [' PROJECT_ROOT                   LOADTIMES']
     for d in dirs
       let id = s:dbs[d]['id']
       if cscope_connection(2, s:cscope_cache_dir.id.'.db') == 1
-        let l = printf("*%d  %10d            %s", id, s:dbs[d]['loadtimes'], d)
+        let l = printf("*%s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
       else
-        let l = printf(" %d  %10d            %s", id, s:dbs[d]['loadtimes'], d)
+        let l = printf(" %s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
       endif
       call add(s, l)
     endfor
