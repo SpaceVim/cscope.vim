@@ -32,7 +32,7 @@ set cpo&vim
 " where to store cscope file?
 
 function! s:echo(msg)
-  echo a:msg
+  echon a:msg
 endfunction
 
 if !exists('g:cscope_cmd')
@@ -84,6 +84,7 @@ function! s:RmDBfiles()
   for f in odbs
     call delete(f, 'rf')
   endfor
+  call s:echo('all databases has been cleared!')
 endfunction
 
 
@@ -193,7 +194,7 @@ endfunction
 ""
 " clear databases
 function! cscope#clear_databases(...)
-  cs kill -1
+  silent cs kill -1
   if a:0 == 0
     let s:dbs = {}
     call s:RmDBfiles()
@@ -203,8 +204,9 @@ function! cscope#clear_databases(...)
     call delete(s:cscope_cache_dir. dir ."/cscope.files")
     call delete(s:cscope_cache_dir. dir .'/cscope.db')
     unlet s:dbs[dir]
+    call s:echo('database cleared: ' . s:cscope_cache_dir. dir .'/cscope.db')
+    call s:FlushIndex()
   endif
-  call s:FlushIndex()
 endfunction
 
 " complete function for command :CscopeClear
@@ -275,10 +277,21 @@ function! s:InitDB(dir)
   call s:FlushIndex()
 endfunction
 
+
+function! s:add_databases(db) abort
+  exe 'silent cs add ' . a:db
+  if cscope_connection(2, a:db) == 1
+    call s:echo('cscope added: ' . a:db)
+    return 0
+  else
+    return 1
+  endif
+endfunction
+
 function! s:LoadDB(dir)
   let dir = s:FILE.path_to_fname(a:dir)
-  cs kill -1
-  exe 'cs add '.s:cscope_cache_dir . dir .'/cscope.db'
+  silent cs kill -1
+  call s:add_databases(s:cscope_cache_dir . dir .'/cscope.db')
   let s:dbs[dir]['loadtimes'] = s:dbs[dir]['loadtimes'] + 1
   call s:FlushIndex()
 endfunction
@@ -288,13 +301,13 @@ function! cscope#list_databases()
   if len(dirs) == 0
     echo "You have no cscope dbs now."
   else
-    let s = [' PROJECT_ROOT                   LOADTIMES']
+    let s = ['  PROJECT_ROOT                   LOADTIMES']
     for d in dirs
       let id = s:dbs[d]['id']
-      if cscope_connection(2, s:cscope_cache_dir.id.'.db') == 1
-        let l = printf("*%s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
+      if cscope_connection(2, s:cscope_cache_dir. d . '/cscope.db') == 1
+        let l = printf("* %s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
       else
-        let l = printf(" %s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
+        let l = printf("  %s                   %d", s:dbs[d].root, s:dbs[d]['loadtimes'])
       endif
       call add(s, l)
     endfor
@@ -343,7 +356,6 @@ function! cscope#onChange()
     call s:FlushIndex()
     call s:CheckNewFile(s:dbs[m_dir].root, expand('%:p'))
     redraw
-    call s:echo('Your cscope db will be updated automatically, you can turn off this message by setting g:cscope_silent 1.')
   endif
 endfunction
 
@@ -360,18 +372,20 @@ function! s:CreateDB(dir, init)
     call writefile(files, cscope_files)
   endif
   try
-    exec 'cs kill '.cscope_db
+    exec 'silent cs kill '.cscope_db
   catch
   endtry
+  let save_x = @x
   redir @x
   exec 'silent !'.g:cscope_cmd.' -b -i '.cscope_files.' -f'.cscope_db
   redi END
   if @x =~ "\nCommand terminated\n"
-    echohl WarningMsg | echo "Failed to create cscope database for ".a:dir.", please check if " | echohl None
+    echohl WarningMsg | echo 'Failed to create cscope database for ' . a:dir | echohl None
   else
     let s:dbs[dir]['dirty'] = 0
-    exec 'cs add '.cscope_db
+    call s:add_databases(cscope_db)
   endif
+  let @x = save_x
 endfunction
 
 ""
