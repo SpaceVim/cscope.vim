@@ -86,6 +86,7 @@ function! s:RmDBfiles()
   endfor
 endfunction
 
+
 function! s:CheckNewFile(dir, newfile)
   let dir = s:FILE.path_to_fname(a:dir)
   let id = s:dbs[dir]['id']
@@ -142,12 +143,6 @@ function! s:ListFiles(dir)
 endfunction
 
 ""
-" provide an interactive interface for finding what you want.
-function! cscope#findInteractive(pattern) abort
-
-endfunction
-
-""
 " update all existing cscope databases in case that you disable cscope database
 " auto update.
 function! cscope#update_databeses() abort
@@ -194,6 +189,9 @@ function! s:updateDBs(dirs)
   call s:FlushIndex()
 endfunction
 
+
+""
+" clear databases
 function! cscope#clearDBs(dir)
   cs kill -1
   if a:dir == ""
@@ -341,11 +339,10 @@ endfunction
 
 function! cscope#onChange()
   let m_dir = s:GetBestPath(expand('%:p:h'))
-  echom m_dir
   if m_dir != ""
     let s:dbs[m_dir]['dirty'] = 1
     call s:FlushIndex()
-    call s:CheckNewFile(m_dir, expand('%:p'))
+    call s:CheckNewFile(s:dbs[m_dir].root, expand('%:p'))
     redraw
     call s:echo('Your cscope db will be updated automatically, you can turn off this message by setting g:cscope_silent 1.')
   endif
