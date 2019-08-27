@@ -211,7 +211,7 @@ endfunction
 
 " complete function for command :CscopeClear
 function! cscope#listDirs(A,L,P)
-  return keys(s:dbs)
+  return map(keys(s:dbs), 's:dbs[v:val].root')
 endfunction
 
 function! ToggleLocationList()

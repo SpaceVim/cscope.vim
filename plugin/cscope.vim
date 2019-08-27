@@ -34,7 +34,7 @@ set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
 com! -nargs=? -complete=customlist,cscope#listDirs CscopeClear call cscope#clearDBs(<f-args>)
 ""
 " List all the cscope databases.
-com! -nargs=0 CscopeList call cscope#listDBs()
+com! -nargs=0 CscopeList call cscope#list_databases()
 
 if exists('g:cscope_preload_path')
   call cscope#preloadDB()
