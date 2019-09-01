@@ -41,7 +41,10 @@ if exists('g:cscope_preload_path')
 endif
 
 if g:cscope_auto_update == 1
-  au BufWritePost * call cscope#onChange()
+    augroup cscope_core
+        autocmd!
+        au BufWritePost * call cscope#onChange()
+    augroup END
 endif
 
 
