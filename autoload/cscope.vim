@@ -361,7 +361,8 @@ function! cscope#onChange()
 endfunction
 
 function! s:CreateDB(dir, init)
-  let dir = s:FILE.path_to_fname(a:dir)
+  let dir = s:FILE.fname_to_path(a:dir)
+  let dir = s:FILE.path_to_fname(dir)
   let id = s:dbs[dir]['id']
   let cscope_files = s:cscope_cache_dir . dir . "/cscope.files"
   let cscope_db = s:cscope_cache_dir . dir . '/cscope.db'
