@@ -84,7 +84,6 @@ function! s:RmDBfiles()
   for f in odbs
     call delete(f, 'rf')
   endfor
-  call s:echo('all databases has been cleared!')
 endfunction
 
 
