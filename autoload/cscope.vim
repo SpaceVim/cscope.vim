@@ -60,7 +60,7 @@ function! cscope#find(action, word)
   let dirtyDirs = []
   for d in keys(s:dbs)
     if s:dbs[d]['dirty'] == 1
-      call add(dirtyDirs, d)
+      call add(dirtyDirs, s:dbs[d]['root'])
     endif
   endfor
   if len(dirtyDirs) > 0
